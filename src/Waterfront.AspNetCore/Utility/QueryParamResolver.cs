@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 
-namespace Waterfront.AspNetCore;
+namespace Waterfront.AspNetCore.Utility;
 
 public static class QueryParamResolver
 {

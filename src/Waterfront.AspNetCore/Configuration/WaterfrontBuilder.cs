@@ -3,12 +3,10 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Waterfront.AspNetCore.Configuration.Endpoints;
 using Waterfront.AspNetCore.Extensions;
-using Waterfront.Core;
 using Waterfront.Core.Authentication;
 using Waterfront.Core.Authorization;
-using Waterfront.Core.Configuration;
 using Waterfront.Core.Configuration.Tokens;
-using Waterfront.Core.Security.Cryptography;
+using Waterfront.Core.Tokens.Signing.CertificateProviders;
 
 namespace Waterfront.AspNetCore.Configuration;
 
@@ -24,10 +22,10 @@ public class WaterfrontBuilder
 
     public WaterfrontBuilder WithCertificateProvider<TProvider>(
         ServiceLifetime lifetime = ServiceLifetime.Scoped
-    ) where TProvider : ITokenCertificateProvider
+    ) where TProvider : ISigningCertificateProvider
     {
         ServiceDescriptor descriptor = ServiceDescriptor.Describe(
-            typeof(ITokenCertificateProvider),
+            typeof(ISigningCertificateProvider),
             typeof(TProvider),
             lifetime
         );
@@ -38,10 +36,10 @@ public class WaterfrontBuilder
     public WaterfrontBuilder WithCertificateProvider<TProvider, TOptions>(
         Action<TOptions> configureOptions,
         ServiceLifetime lifetime = ServiceLifetime.Scoped
-    ) where TProvider : TokenCertificateProvider<TOptions> where TOptions : class
+    ) where TProvider : SigningCertificateProviderBase<TOptions> where TOptions : class
     {
         ServiceDescriptor descriptor = ServiceDescriptor.Describe(
-            typeof(ITokenCertificateProvider),
+            typeof(ISigningCertificateProvider),
             typeof(TProvider),
             lifetime
         );
@@ -61,7 +59,7 @@ public class WaterfrontBuilder
 
     public WaterfrontBuilder WithAuthentication<TService, TOptions>(
         Action<TOptions> configureOptions
-    ) where TService : AclAuthenticationService<TOptions> where TOptions : class
+    ) where TService : AclAuthenticationServiceBase<TOptions> where TOptions : class
     {
         _services.AddScoped<IAclAuthenticationService, TService>();
         _services.AddSingleton<IConfigureOptions<TOptions>>(
@@ -79,7 +77,7 @@ public class WaterfrontBuilder
 
     public WaterfrontBuilder WithAuthorization<TService, TOptions>(
         Action<TOptions> configureOptions
-    ) where TService : AclAuthorizationService<TOptions> where TOptions : class
+    ) where TService : AclAuthorizationServiceBase<TOptions> where TOptions : class
     {
         _services.AddScoped<IAclAuthorizationService, TService>();
         _services.AddSingleton<IConfigureOptions<TOptions>>(

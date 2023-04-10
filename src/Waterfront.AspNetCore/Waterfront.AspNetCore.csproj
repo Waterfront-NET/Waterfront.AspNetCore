@@ -4,7 +4,7 @@
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <Version>1.0.0-alpha.1</Version>
+        <Version>1.0.0-alpha.3</Version>
     </PropertyGroup>
 
     <ItemGroup>
@@ -18,8 +18,8 @@
         <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
         <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
-        <PackageReference Include="Waterfront.Common" Version="1.0.0-alpha.2" />
-        <PackageReference Include="Waterfront.Core" Version="1.0.0-alpha.2" />
+        <PackageReference Include="Waterfront.Common" Version="1.0.0-alpha.4" />
+        <PackageReference Include="Waterfront.Core" Version="1.0.0-alpha.4" />
     </ItemGroup>
 
 </Project>

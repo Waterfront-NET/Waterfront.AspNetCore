@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Waterfront.AspNetCore.Configuration;
@@ -11,8 +10,7 @@ using Waterfront.AspNetCore.Middleware;
 using Waterfront.AspNetCore.Services.Authentication;
 using Waterfront.AspNetCore.Services.Authorization;
 using Waterfront.Core;
-using Waterfront.Core.Configuration;
-using Waterfront.Core.Jwt;
+using Waterfront.Core.Tokens.Encoders;
 
 namespace Waterfront.AspNetCore.Extensions;
 
@@ -39,7 +37,6 @@ public static class WaterfrontExtensions
 
         services.TryAddScoped<TokenRequestAuthenticationService>();
         services.TryAddScoped<TokenRequestAuthorizationService>();
-        services.TryAddScoped<ITokenRequestService, TokenRequestService>();
         services.TryAddScoped<ITokenDefinitionService, TokenDefinitionService>();
         services.TryAddScoped<ITokenEncoder, TokenEncoder>();
         services.TryAddScoped<TokenMiddleware>();

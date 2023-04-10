@@ -5,6 +5,9 @@ using Waterfront.Core.Authentication;
 
 namespace Waterfront.AspNetCore.Services.Authentication;
 
+/// <summary>
+/// Helper service which aggregates all the results from <see cref="IAclAuthenticationService"/> into final result
+/// </summary>
 public class TokenRequestAuthenticationService
 {
     private readonly ILogger<TokenRequestAuthenticationService> _logger;
@@ -22,8 +25,8 @@ public class TokenRequestAuthenticationService
     public async ValueTask<AclAuthenticationResult> AuthenticateAsync(TokenRequest request)
     {
         _logger.LogDebug("Authenticating TokenRequest {RequestId}", request.Id);
-        
-        AclAuthenticationResult result = AclAuthenticationResult.Failed;
+
+        AclAuthenticationResult result = AclAuthenticationResult.FailedForRequest(request);
         
         foreach (IAclAuthenticationService service in _authenticationServices)
         {

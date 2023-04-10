@@ -3,7 +3,6 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Waterfront.AspNetCore.Extensions;
-using Waterfront.AspNetCore.Json.Converters;
 using Waterfront.AspNetCore.Services.Authentication;
 using Waterfront.AspNetCore.Services.Authorization;
 using Waterfront.AspNetCore.Utility;
@@ -13,6 +12,7 @@ using Waterfront.Common.Authorization;
 using Waterfront.Common.Contracts.Tokens.Response;
 using Waterfront.Common.Tokens;
 using Waterfront.Core;
+using Waterfront.Core.Json.Converters;
 using Waterfront.Core.Tokens.Encoders;
 using Waterfront.Core.Utility.Parsing;
 using Waterfront.Core.Utility.Parsing.Acl;
@@ -22,9 +22,6 @@ namespace Waterfront.AspNetCore.Middleware;
 
 public class TokenMiddleware : IMiddleware
 {
-    private static readonly JsonSerializerOptions s_SerializerOptions =
-    new JsonSerializerOptions { Converters = { TokenResponseJsonConverter.Instance } };
-
     private readonly ILogger<TokenMiddleware>          _logger;
     private readonly ITokenDefinitionService           _tokenDefinitionService;
     private readonly ITokenEncoder                     _tokenEncoder;
@@ -141,7 +138,9 @@ public class TokenMiddleware : IMiddleware
 
         await Results.Json(
                          tokenResponse,
-                         options: s_SerializerOptions,
+                         options: new JsonSerializerOptions {
+                             Converters = { new TokenResponseJsonConverter() }
+                         },
                          statusCode: HttpStatusCode.OK.ToInt32()
                      )
                      .ExecuteAsync(context);

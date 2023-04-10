@@ -4,7 +4,7 @@
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <Version>1.0.0-alpha.3</Version>
+        <Version>1.0.0-alpha.4</Version>
     </PropertyGroup>
 
     <ItemGroup>
@@ -19,7 +19,11 @@
         <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
         <PackageReference Include="Waterfront.Common" Version="1.0.0-alpha.4" />
-        <PackageReference Include="Waterfront.Core" Version="1.0.0-alpha.4" />
+        <PackageReference Include="Waterfront.Core" Version="1.0.0-alpha.6" />
     </ItemGroup>
+
+    <Target Name="Push package" AfterTargets="Pack">
+        <Exec Command="dotnet nuget push $(MSBuildThisFileDirectory)bin\Release\Waterfront.AspNetCore.$(Version).nupkg -s C:\Users\2CHEVSKII\.nuget\packages"/>
+    </Target>
 
 </Project>

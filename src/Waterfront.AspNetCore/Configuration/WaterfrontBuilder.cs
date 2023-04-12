@@ -11,7 +11,7 @@ using Waterfront.Core.Tokens.Signing.CertificateProviders;
 
 namespace Waterfront.AspNetCore.Configuration;
 
-public class WaterfrontBuilder
+public sealed class WaterfrontBuilder
 {
     private readonly IServiceCollection _services;
 
@@ -101,48 +101,5 @@ public class WaterfrontBuilder
             new ConfigureOptions<EndpointOptions>(configureOptions)
         );
         return this;
-    }
-
-    public WaterfrontBuilder UseConfiguration(IConfiguration configuration)
-    {
-        IConfigurationSection? endpointsSection = configuration.GetSection("Endpoints");
-
-        if ( endpointsSection.Exists() )
-        {
-            _services.AddSingleton<IConfigureOptions<EndpointOptions>>(
-                new ConfigureOptions<EndpointOptions>(endpointsSection.Bind)
-            );
-        }
-
-        IConfigurationSection? tokensSection = configuration.GetSection("Tokens");
-
-        if ( tokensSection.Exists() )
-        {
-            _services.AddSingleton<IConfigureOptions<TokenOptions>>(
-                new ConfigureOptions<TokenOptions>(tokensSection.Bind)
-            );
-        }
-
-        IConfigurationSection? certificateProvidersSection = configuration.GetSection("CertificateProviders");
-
-        if ( !certificateProvidersSection.Exists() )
-        {
-            certificateProvidersSection = configuration.GetSection("Certificate_Providers");
-        }
-
-        if ( certificateProvidersSection.Exists() )
-        {
-            IConfigurationSection? fileProvider = certificateProvidersSection.GetSection("File");
-
-            if ( fileProvider.Exists() )
-            {
-                WithCertificateProvider<FileSigningCertificateProvider,
-                    FileTokenCertificateProviderOptions>(
-                    options => {
-                        fileProvider.Bind(options);
-                    }
-                );
-            }
-        }
     }
 }

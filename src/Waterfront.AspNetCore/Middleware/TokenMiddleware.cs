@@ -5,33 +5,36 @@ using Microsoft.Extensions.Logging;
 using Waterfront.AspNetCore.Extensions;
 using Waterfront.AspNetCore.Services.Authentication;
 using Waterfront.AspNetCore.Services.Authorization;
-using Waterfront.AspNetCore.Utility;
+using Waterfront.AspNetCore.Services.Requests;
 using Waterfront.Common.Authentication;
-using Waterfront.Common.Authentication.Credentials;
 using Waterfront.Common.Authorization;
 using Waterfront.Common.Contracts.Tokens.Response;
 using Waterfront.Common.Tokens;
-using Waterfront.Core;
 using Waterfront.Core.Json.Converters;
+using Waterfront.Core.Tokens.Definition;
 using Waterfront.Core.Tokens.Encoders;
-using Waterfront.Core.Utility.Parsing;
-using Waterfront.Core.Utility.Parsing.Acl;
 using Waterfront.Core.Utility.Serialization.Acl;
 
 namespace Waterfront.AspNetCore.Middleware;
 
 public class TokenMiddleware : IMiddleware
 {
+    private static readonly JsonSerializerOptions s_JsonSerializerOptions =
+    new JsonSerializerOptions { Converters = { TokenResponseJsonConverter.Instance } };
+    
     private readonly ILogger<TokenMiddleware>          _logger;
     private readonly ITokenDefinitionService           _tokenDefinitionService;
     private readonly ITokenEncoder                     _tokenEncoder;
+    private readonly TokenRequestCreationService       _requestCreationService;
     private readonly TokenRequestAuthenticationService _authenticationService;
     private readonly TokenRequestAuthorizationService  _authorizationService;
+    
 
     public TokenMiddleware(
         ILogger<TokenMiddleware> logger,
         ITokenDefinitionService tokenDefinitionService,
         ITokenEncoder tokenEncoder,
+        TokenRequestCreationService requestCreationService,
         TokenRequestAuthenticationService authenticationService,
         TokenRequestAuthorizationService authorizationService
     )
@@ -39,6 +42,7 @@ public class TokenMiddleware : IMiddleware
         _logger                 = logger;
         _tokenDefinitionService = tokenDefinitionService;
         _tokenEncoder           = tokenEncoder;
+        _requestCreationService = requestCreationService;
         _authenticationService  = authenticationService;
         _authorizationService   = authorizationService;
     }
@@ -57,37 +61,17 @@ public class TokenMiddleware : IMiddleware
             return;
         }
 
-        if ( !QueryParamResolver.TryGetQueryParams(
-                 context.Request.Query,
-                 out string service,
-                 out string? account,
-                 out string? clientId,
-                 out string? offlineToken,
-                 out IEnumerable<string> scopes
-             ) )
+        TokenRequest tokenRequest;
+
+        try
         {
-            _logger.LogError("Failed to resolve query params for request {RequestId}", requestId);
-            await Results.BadRequest("Invalid request query").ExecuteAsync(context);
+            tokenRequest = _requestCreationService.CreateRequest(context);
+        }
+        catch (InvalidOperationException exception)
+        {
+            await Results.BadRequest(exception).ExecuteAsync(context);
             return;
         }
-
-        var (basicUsername, basicPassword) =
-        BasicAuthParser.ParseHeaderValue(context.Request.Headers.Authorization);
-
-        TokenRequest tokenRequest = new TokenRequest {
-            Id      = requestId,
-            Service = service,
-            Account = account,
-            Client  = clientId,
-            OfflineToken = offlineToken switch {
-                               null or "" => false,
-                               _          => bool.Parse(offlineToken)
-                           },
-            BasicCredentials = new BasicCredentials(basicUsername, basicPassword),
-            ConnectionCredentials = context.GetConnectionCredentials(),
-            RefreshTokenCredentials = RefreshTokenCredentials.Empty, /*TODO: Unused now*/
-            Scopes = scopes.Select(AclEntityParser.ParseTokenRequestScope).ToArray()
-        };
 
         _logger.LogDebug("Token request created: {@TokenRequest}", tokenRequest);
 
@@ -138,9 +122,7 @@ public class TokenMiddleware : IMiddleware
 
         await Results.Json(
                          tokenResponse,
-                         options: new JsonSerializerOptions {
-                             Converters = { new TokenResponseJsonConverter() }
-                         },
+                         options: s_JsonSerializerOptions,
                          statusCode: HttpStatusCode.OK.ToInt32()
                      )
                      .ExecuteAsync(context);

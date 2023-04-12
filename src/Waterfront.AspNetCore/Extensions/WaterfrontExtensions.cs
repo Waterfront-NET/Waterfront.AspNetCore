@@ -10,6 +10,7 @@ using Waterfront.AspNetCore.Middleware;
 using Waterfront.AspNetCore.Services.Authentication;
 using Waterfront.AspNetCore.Services.Authorization;
 using Waterfront.Core;
+using Waterfront.Core.Tokens.Definition;
 using Waterfront.Core.Tokens.Encoders;
 
 namespace Waterfront.AspNetCore.Extensions;

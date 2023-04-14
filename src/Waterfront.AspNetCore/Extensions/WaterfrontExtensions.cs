@@ -15,26 +15,38 @@ namespace Waterfront.AspNetCore.Extensions;
 
 public static class WaterfrontExtensions
 {
-    public static WaterfrontBuilder AddWaterfront(this IServiceCollection services)
+    public static WaterfrontBuilder AddWaterfront(this IServiceCollection services) =>
+    new WaterfrontBuilder(services.AddWaterfrontCore()).WithTokenEncoder<TokenEncoder>()
+                                                       .WithTokenDefinitionService<TokenDefinitionService>()
+                                                       .ConfigureTokens(
+                                                           tokens => {
+                                                               tokens.Issuer   = "Waterfront";
+                                                               tokens.Lifetime = TimeSpan.FromSeconds(60);
+                                                           }
+                                                       )
+                                                       .ConfigureEndpoints(
+                                                           endpoints => endpoints.TokenEndpoint = "/token"
+                                                       );
+
+    public static IServiceCollection AddWaterfront(
+        this IServiceCollection services,
+        Action<WaterfrontBuilder> configureWaterfront
+    )
+    {
+        configureWaterfront(services.AddWaterfront());
+        return services;
+    }
+
+    public static IServiceCollection AddWaterfrontCore(this IServiceCollection services)
     {
         services.AddOptions();
 
+        services.TryAddSingleton<TokenRequestCreationService>();
         services.TryAddScoped<TokenRequestAuthenticationService>();
         services.TryAddScoped<TokenRequestAuthorizationService>();
-
         services.TryAddScoped<TokenMiddleware>();
 
-        return new WaterfrontBuilder(services).WithTokenEncoder<TokenEncoder>()
-                                              .WithTokenDefinitionService<TokenDefinitionService>()
-                                              .ConfigureTokens(
-                                                  tokens => {
-                                                      tokens.Issuer   = "Waterfront";
-                                                      tokens.Lifetime = TimeSpan.FromSeconds(60);
-                                                  }
-                                              )
-                                              .ConfigureEndpoints(
-                                                  endpoints => endpoints.TokenEndpoint = "/token"
-                                              );
+        return services;
     }
 
     public static IApplicationBuilder UseWaterfront(

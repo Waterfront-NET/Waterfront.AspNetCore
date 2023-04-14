@@ -32,9 +32,9 @@ public class TokenRequestCreationService
             throw new InvalidOperationException("Failed to get value: service");
         }
 
-        string?  account         = query["account"].FirstOrDefault();
-        string?  clientId        = query["client_id"].ToString();
-        string?  strOfflineToken = query["offline_token"].ToString();
+        string   account         = query["account"].ToString();
+        string   clientId        = query["client_id"].ToString();
+        string   strOfflineToken = query["offline_token"].ToString();
         string[] strScopes       = query["scope"].ToArray();
 
         BasicCredentials basicCredentials =
@@ -53,8 +53,8 @@ public class TokenRequestCreationService
             Account = account,
             Client  = clientId,
             OfflineToken = strOfflineToken switch {
-                               null  => false,
-                               var x => bool.Parse(x)
+                               { Length: not 0 } => bool.Parse(strOfflineToken),
+                               _                 => false
                            },
             Scopes = new List<TokenRequestScope>(
                 strScopes.Select(AclEntityParser.ParseTokenRequestScope)

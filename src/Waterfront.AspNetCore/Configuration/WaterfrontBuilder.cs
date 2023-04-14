@@ -74,8 +74,7 @@ public sealed class WaterfrontBuilder
 
     public WaterfrontBuilder WithAuthentication<TAuthnService>(
         ServiceLifetime lifetime = ServiceLifetime.Scoped
-    )
-        where TAuthnService : IAclAuthenticationService
+    ) where TAuthnService : IAclAuthenticationService
     {
         ValidateAuthServiceLifetime(lifetime);
 
@@ -91,9 +90,8 @@ public sealed class WaterfrontBuilder
     public WaterfrontBuilder WithAuthentication<TAuthnService, TServiceOptions>(
         Action<TServiceOptions> configureOptions,
         ServiceLifetime lifetime = ServiceLifetime.Scoped
-    )
-        where TAuthnService : AclAuthenticationServiceBase<TServiceOptions>
-        where TServiceOptions : class
+    ) where TAuthnService : AclAuthenticationServiceBase<TServiceOptions>
+      where TServiceOptions : class
     {
         ValidateAuthServiceLifetime(lifetime);
 
@@ -149,8 +147,7 @@ public sealed class WaterfrontBuilder
 
     public WaterfrontBuilder WithAuthorization<TAuthzService>(
         ServiceLifetime lifetime = ServiceLifetime.Scoped
-    )
-        where TAuthzService : IAclAuthorizationService
+    ) where TAuthzService : IAclAuthorizationService
     {
         ValidateAuthServiceLifetime(lifetime);
 
@@ -212,18 +209,18 @@ public sealed class WaterfrontBuilder
     public WaterfrontBuilder WithAuthorization<TAuthzService, TServiceOptions, TDep>(
         Action<TDep, TServiceOptions> configureOptions,
         ServiceLifetime lifetime = ServiceLifetime.Scoped
-    )
-        where TAuthzService : AclAuthorizationServiceBase<TServiceOptions>
-        where TServiceOptions : class
-        where TDep : notnull
+    ) where TAuthzService : AclAuthorizationServiceBase<TServiceOptions>
+      where TServiceOptions : class
+      where TDep : notnull
     {
         return WithAuthorization<TAuthzService, TServiceOptions>(
             (sp, opt) => configureOptions(sp.GetRequiredService<TDep>(), opt)
         );
     }
 
-    public WaterfrontBuilder WithTokenDefinitionService<TDefService>(ServiceLifetime lifetime = ServiceLifetime.Singleton)
-    where TDefService : ITokenDefinitionService
+    public WaterfrontBuilder WithTokenDefinitionService<TDefService>(
+        ServiceLifetime lifetime = ServiceLifetime.Singleton
+    ) where TDefService : ITokenDefinitionService
     {
         ServiceDescriptor descriptor = ServiceDescriptor.Describe(
             typeof(ITokenDefinitionService),
@@ -235,9 +232,93 @@ public sealed class WaterfrontBuilder
         return this;
     }
 
+    public WaterfrontBuilder WithSigningCertificateProvider<TProvider>(
+        ServiceLifetime lifetime = ServiceLifetime.Singleton
+    ) where TProvider : ISigningCertificateProvider
+    {
+        ServiceDescriptor descriptor = ServiceDescriptor.Describe(
+            typeof(ISigningCertificateProvider),
+            typeof(TProvider),
+            lifetime
+        );
+
+        _services.Add(descriptor);
+        return this;
+    }
+
+    public WaterfrontBuilder WithSigningCertificateProvider<TProvider, TProviderOptions>(
+        Action<TProviderOptions> configureOptions,
+        ServiceLifetime lifetime = ServiceLifetime.Singleton
+    ) where TProvider : SigningCertificateProviderBase<TProviderOptions>
+      where TProviderOptions : class
+    {
+        ServiceDescriptor descriptor = ServiceDescriptor.Describe(
+            typeof(ISigningCertificateProvider),
+            typeof(TProvider),
+            lifetime
+        );
+        ServiceDescriptor optionsDescriptor = ServiceDescriptor.Describe(
+            typeof(IConfigureOptions<TProviderOptions>),
+            _ => new ConfigureOptions<TProviderOptions>(configureOptions),
+            ServiceLifetime.Transient
+        );
+
+        _services.Add(descriptor);
+        _services.Replace(optionsDescriptor);
+        return this;
+    }
+
+    public WaterfrontBuilder WithSigningCertificateProvider<TProvider, TProviderOptions>(
+        Action<IServiceProvider, TProviderOptions> configureOptions,
+        ServiceLifetime lifetime = ServiceLifetime.Singleton
+    ) where TProvider : SigningCertificateProviderBase<TProviderOptions>
+      where TProviderOptions : class
+    {
+        ServiceDescriptor descriptor = ServiceDescriptor.Describe(
+            typeof(ISigningCertificateProvider),
+            typeof(TProvider),
+            lifetime
+        );
+        ServiceDescriptor optionsDescriptor = ServiceDescriptor.Describe(
+            typeof(IConfigureOptions<TProviderOptions>),
+            sp => new ConfigureOptions<TProviderOptions>(opt => configureOptions(sp, opt)),
+            ServiceLifetime.Transient
+        );
+
+        _services.Add(descriptor);
+        _services.Replace(optionsDescriptor);
+        return this;
+    }
+
+    public WaterfrontBuilder WithSigningCertificateProvider<TProvider, TProviderOptions, TDep>(
+        Action<TDep, TProviderOptions> configureOptions,
+        ServiceLifetime lifetime = ServiceLifetime.Singleton
+    ) where TProvider : SigningCertificateProviderBase<TProviderOptions>
+      where TProviderOptions : class
+      where TDep : notnull
+    {
+        ServiceDescriptor descriptor = ServiceDescriptor.Describe(
+            typeof(ISigningCertificateProvider),
+            typeof(TProvider),
+            lifetime
+        );
+        ServiceDescriptor optionsDescriptor = ServiceDescriptor.Describe(
+            typeof(IConfigureOptions<TProviderOptions>),
+            sp => new ConfigureOptions<TProviderOptions>(
+                opt => configureOptions(sp.GetRequiredService<TDep>(), opt)
+            ),
+            ServiceLifetime.Transient
+        );
+
+        _services.Add(descriptor);
+        _services.Replace(optionsDescriptor);
+
+        return this;
+    }
+
     private void ValidateAuthServiceLifetime(ServiceLifetime lifetime)
     {
-        if (lifetime == ServiceLifetime.Transient)
+        if ( lifetime == ServiceLifetime.Transient )
         {
             throw new ArgumentOutOfRangeException(
                 nameof(lifetime),

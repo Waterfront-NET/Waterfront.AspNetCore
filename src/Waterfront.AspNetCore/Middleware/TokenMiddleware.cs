@@ -67,7 +67,12 @@ public class TokenMiddleware : IMiddleware
         }
         catch (InvalidOperationException exception)
         {
-            await Results.BadRequest(exception).ExecuteAsync(context);
+            await Results.BadRequest(new {
+                exception.Message,
+                exception.Data,
+                exception.StackTrace,
+                exception.Source
+            }).ExecuteAsync(context);
             return;
         }
 

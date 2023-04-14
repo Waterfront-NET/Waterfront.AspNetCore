@@ -6,7 +6,7 @@ using Waterfront.Common.Tokens;
 using Waterfront.Core.Utility.Parsing;
 using Waterfront.Core.Utility.Parsing.Acl;
 
-namespace Waterfront.AspNetCore.Services.Requests;
+namespace Waterfront.AspNetCore.Services.TokenRequests;
 
 public class TokenRequestCreationService
 {

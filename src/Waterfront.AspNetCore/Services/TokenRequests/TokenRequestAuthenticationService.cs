@@ -3,7 +3,7 @@ using Waterfront.Common.Authentication;
 using Waterfront.Common.Tokens;
 using Waterfront.Core.Authentication;
 
-namespace Waterfront.AspNetCore.Services.Authentication;
+namespace Waterfront.AspNetCore.Services.TokenRequests;
 
 /// <summary>
 /// Helper service which aggregates all the results from <see cref="IAclAuthenticationService"/> into final result

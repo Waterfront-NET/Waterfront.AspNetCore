@@ -7,8 +7,7 @@ using Microsoft.Extensions.Options;
 using Waterfront.AspNetCore.Configuration;
 using Waterfront.AspNetCore.Configuration.Endpoints;
 using Waterfront.AspNetCore.Middleware;
-using Waterfront.AspNetCore.Services.Authentication;
-using Waterfront.AspNetCore.Services.Authorization;
+using Waterfront.AspNetCore.Services.TokenRequests;
 using Waterfront.Core.Tokens.Definition;
 using Waterfront.Core.Tokens.Encoders;
 
@@ -20,16 +19,22 @@ public static class WaterfrontExtensions
     {
         services.AddOptions();
 
-        services.TryAddSingleton<ITokenDefinitionService, TokenDefinitionService>();
         services.TryAddScoped<TokenRequestAuthenticationService>();
         services.TryAddScoped<TokenRequestAuthorizationService>();
 
         services.TryAddScoped<TokenMiddleware>();
-        
-        var builder = new WaterfrontBuilder(services);
-        builder.UseDefaultTokenEncoder();
 
-        return builder;
+        return new WaterfrontBuilder(services).WithTokenEncoder<TokenEncoder>()
+                                              .WithTokenDefinitionService<TokenDefinitionService>()
+                                              .ConfigureTokens(
+                                                  tokens => {
+                                                      tokens.Issuer   = "Waterfront";
+                                                      tokens.Lifetime = TimeSpan.FromSeconds(60);
+                                                  }
+                                              )
+                                              .ConfigureEndpoints(
+                                                  endpoints => endpoints.TokenEndpoint = "/token"
+                                              );
     }
 
     public static IApplicationBuilder UseWaterfront(

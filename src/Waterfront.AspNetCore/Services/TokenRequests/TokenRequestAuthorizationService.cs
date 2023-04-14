@@ -1,11 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
-using Waterfront.Common.Acl;
 using Waterfront.Common.Authentication;
 using Waterfront.Common.Authorization;
 using Waterfront.Common.Tokens;
 using Waterfront.Core.Authorization;
 
-namespace Waterfront.AspNetCore.Services.Authorization;
+namespace Waterfront.AspNetCore.Services.TokenRequests;
 
 /// <summary>
 /// Helper service which aggregates all the results from <see cref="IAclAuthorizationService"/> into final result

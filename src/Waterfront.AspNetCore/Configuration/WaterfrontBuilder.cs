@@ -8,6 +8,7 @@ using Waterfront.AspNetCore.Configuration.Endpoints;
 using Waterfront.Core.Authentication;
 using Waterfront.Core.Authorization;
 using Waterfront.Core.Configuration.Tokens;
+using Waterfront.Core.Tokens.Definition;
 using Waterfront.Core.Tokens.Encoders;
 using Waterfront.Core.Tokens.Signing.CertificateProviders;
 
@@ -219,6 +220,19 @@ public sealed class WaterfrontBuilder
         return WithAuthorization<TAuthzService, TServiceOptions>(
             (sp, opt) => configureOptions(sp.GetRequiredService<TDep>(), opt)
         );
+    }
+
+    public WaterfrontBuilder WithTokenDefinitionService<TDefService>(ServiceLifetime lifetime = ServiceLifetime.Singleton)
+    where TDefService : ITokenDefinitionService
+    {
+        ServiceDescriptor descriptor = ServiceDescriptor.Describe(
+            typeof(ITokenDefinitionService),
+            typeof(TDefService),
+            lifetime
+        );
+
+        _services.Replace(descriptor);
+        return this;
     }
 
     private void ValidateAuthServiceLifetime(ServiceLifetime lifetime)

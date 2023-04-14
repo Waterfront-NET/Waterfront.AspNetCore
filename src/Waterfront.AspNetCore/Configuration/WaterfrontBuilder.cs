@@ -1,12 +1,14 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Waterfront.AspNetCore.Configuration.Endpoints;
-using Waterfront.AspNetCore.Extensions;
 using Waterfront.Core.Authentication;
 using Waterfront.Core.Authorization;
 using Waterfront.Core.Configuration.Tokens;
+using Waterfront.Core.Tokens.Encoders;
 using Waterfront.Core.Tokens.Signing.CertificateProviders;
 
 namespace Waterfront.AspNetCore.Configuration;
@@ -18,88 +20,215 @@ public sealed class WaterfrontBuilder
     public WaterfrontBuilder(IServiceCollection services)
     {
         _services = services;
-        services.AddWaterfrontCore();
     }
 
-    public WaterfrontBuilder WithCertificateProvider<TProvider>(
-        ServiceLifetime lifetime = ServiceLifetime.Scoped
-    ) where TProvider : ISigningCertificateProvider
+    public WaterfrontBuilder WithTokenEncoder<TEncoder>(
+        ServiceLifetime lifetime = ServiceLifetime.Singleton
+    ) where TEncoder : ITokenEncoder
     {
         ServiceDescriptor descriptor = ServiceDescriptor.Describe(
-            typeof(ISigningCertificateProvider),
-            typeof(TProvider),
+            typeof(ITokenEncoder),
+            typeof(TEncoder),
             lifetime
         );
-        _services.TryAdd(descriptor);
+
+        _services.Replace(descriptor);
+
         return this;
     }
 
-    public WaterfrontBuilder WithCertificateProvider<TProvider, TOptions>(
-        Action<TOptions> configureOptions,
-        ServiceLifetime lifetime = ServiceLifetime.Scoped
-    ) where TProvider : SigningCertificateProviderBase<TOptions> where TOptions : class
+    public WaterfrontBuilder ConfigureEndpoints(Action<EndpointOptions> configureEndpoints)
+    {
+        return ConfigureEndpoints((_, endpoints) => configureEndpoints(endpoints));
+    }
+
+    public WaterfrontBuilder ConfigureEndpoints(
+        Action<IServiceProvider, EndpointOptions> configureEndpoints
+    )
     {
         ServiceDescriptor descriptor = ServiceDescriptor.Describe(
-            typeof(ISigningCertificateProvider),
-            typeof(TProvider),
+            typeof(IConfigureOptions<EndpointOptions>),
+            sp => new ConfigureOptions<EndpointOptions>(opt => configureEndpoints(sp, opt)),
+            ServiceLifetime.Transient
+        );
+        _services.Replace(descriptor);
+        return this;
+    }
+
+    public WaterfrontBuilder ConfigureTokens(Action<TokenOptions> configureTokens)
+    {
+        return ConfigureTokens((_, tokens) => configureTokens(tokens));
+    }
+
+    public WaterfrontBuilder ConfigureTokens(Action<IServiceProvider, TokenOptions> configureTokens)
+    {
+        ServiceDescriptor descriptor = ServiceDescriptor.Describe(
+            typeof(IConfigureOptions<TokenOptions>),
+            sp => new ConfigureOptions<TokenOptions>(opt => configureTokens(sp, opt)),
+            ServiceLifetime.Transient
+        );
+        _services.Replace(descriptor);
+        return this;
+    }
+
+    public WaterfrontBuilder WithAuthentication<TAuthnService>(
+        ServiceLifetime lifetime = ServiceLifetime.Scoped
+    )
+        where TAuthnService : IAclAuthenticationService
+    {
+        ValidateAuthServiceLifetime(lifetime);
+
+        ServiceDescriptor descriptor = ServiceDescriptor.Describe(
+            typeof(IAclAuthenticationService),
+            typeof(TAuthnService),
             lifetime
         );
-        _services.TryAdd(descriptor);
-        _services.AddSingleton<IConfigureOptions<TOptions>>(
-            new ConfigureNamedOptions<TOptions>(Options.DefaultName, configureOptions)
+        _services.Add(descriptor);
+        return this;
+    }
+
+    public WaterfrontBuilder WithAuthentication<TAuthnService, TServiceOptions>(
+        Action<TServiceOptions> configureOptions,
+        ServiceLifetime lifetime = ServiceLifetime.Scoped
+    )
+        where TAuthnService : AclAuthenticationServiceBase<TServiceOptions>
+        where TServiceOptions : class
+    {
+        ValidateAuthServiceLifetime(lifetime);
+
+        ServiceDescriptor descriptor = ServiceDescriptor.Describe(
+            typeof(IAclAuthenticationService),
+            typeof(TAuthnService),
+            lifetime
         );
-        return this;
-    }
-
-    public WaterfrontBuilder WithAuthentication<TService>()
-    where TService : class, IAclAuthenticationService
-    {
-        _services.AddScoped<IAclAuthenticationService, TService>();
-        return this;
-    }
-
-    public WaterfrontBuilder WithAuthentication<TService, TOptions>(
-        Action<TOptions> configureOptions
-    ) where TService : AclAuthenticationServiceBase<TOptions> where TOptions : class
-    {
-        _services.AddScoped<IAclAuthenticationService, TService>();
-        _services.AddSingleton<IConfigureOptions<TOptions>>(
-            new ConfigureNamedOptions<TOptions>(Options.DefaultName, configureOptions)
+        ServiceDescriptor optionsDescriptor = ServiceDescriptor.Describe(
+            typeof(IConfigureOptions<TServiceOptions>),
+            _ => new ConfigureOptions<TServiceOptions>(configureOptions),
+            ServiceLifetime.Transient
         );
+        _services.Add(descriptor);
+        _services.Replace(optionsDescriptor);
         return this;
     }
 
-    public WaterfrontBuilder WithAuthorization<TService>()
-    where TService : class, IAclAuthorizationService
+    public WaterfrontBuilder WithAuthentication<TAuthnService, TServiceOptions>(
+        Action<IServiceProvider, TServiceOptions> configureOptions,
+        ServiceLifetime lifetime = ServiceLifetime.Scoped
+    ) where TAuthnService : AclAuthenticationServiceBase<TServiceOptions>
+      where TServiceOptions : class
     {
-        _services.AddScoped<IAclAuthorizationService, TService>();
-        return this;
-    }
+        ValidateAuthServiceLifetime(lifetime);
 
-    public WaterfrontBuilder WithAuthorization<TService, TOptions>(
-        Action<TOptions> configureOptions
-    ) where TService : AclAuthorizationServiceBase<TOptions> where TOptions : class
-    {
-        _services.AddScoped<IAclAuthorizationService, TService>();
-        _services.AddSingleton<IConfigureOptions<TOptions>>(
-            new ConfigureNamedOptions<TOptions>(Options.DefaultName, configureOptions)
+        ServiceDescriptor descriptor = ServiceDescriptor.Describe(
+            typeof(IAclAuthenticationService),
+            typeof(TAuthnService),
+            lifetime
         );
+        ServiceDescriptor optionsDescriptor = ServiceDescriptor.Describe(
+            typeof(IConfigureOptions<TServiceOptions>),
+            sp => new ConfigureOptions<TServiceOptions>(opt => configureOptions(sp, opt)),
+            ServiceLifetime.Transient
+        );
+        _services.Add(descriptor);
+        _services.Replace(optionsDescriptor);
         return this;
     }
 
-    public WaterfrontBuilder ConfigureTokenOptions(Action<TokenOptions> configureOptions)
+    public WaterfrontBuilder WithAuthentication<TAuthnService, TServiceOptions, TDep>(
+        Action<TDep, TServiceOptions> configureOptions,
+        ServiceLifetime lifetime = ServiceLifetime.Scoped
+    ) where TAuthnService : AclAuthenticationServiceBase<TServiceOptions>
+      where TServiceOptions : class
+      where TDep : notnull
     {
-        _services.AddSingleton<IConfigureOptions<TokenOptions>>(
-            new ConfigureNamedOptions<TokenOptions>(Options.DefaultName, configureOptions)
+        return WithAuthentication<TAuthnService, TServiceOptions>(
+            (sp, opt) => configureOptions(sp.GetRequiredService<TDep>(), opt)
         );
+    }
+
+    public WaterfrontBuilder WithAuthorization<TAuthzService>(
+        ServiceLifetime lifetime = ServiceLifetime.Scoped
+    )
+        where TAuthzService : IAclAuthorizationService
+    {
+        ValidateAuthServiceLifetime(lifetime);
+
+        ServiceDescriptor descriptor = ServiceDescriptor.Describe(
+            typeof(IAclAuthorizationService),
+            typeof(TAuthzService),
+            lifetime
+        );
+        _services.Add(descriptor);
         return this;
     }
 
-    public WaterfrontBuilder ConfigureEndPoints(Action<EndpointOptions> configureOptions)
+    public WaterfrontBuilder WithAuthorization<TAuthzService, TServiceOptions>(
+        Action<TServiceOptions> configureOptions,
+        ServiceLifetime lifetime = ServiceLifetime.Scoped
+    ) where TAuthzService : AclAuthorizationServiceBase<TServiceOptions>
+      where TServiceOptions : class
     {
-        _services.AddSingleton<IConfigureOptions<EndpointOptions>>(
-            new ConfigureOptions<EndpointOptions>(configureOptions)
+        ServiceDescriptor descriptor = ServiceDescriptor.Describe(
+            typeof(IAclAuthorizationService),
+            typeof(TAuthzService),
+            lifetime
         );
+        ServiceDescriptor optionsDescriptor = ServiceDescriptor.Describe(
+            typeof(IConfigureOptions<TServiceOptions>),
+            _ => new ConfigureOptions<TServiceOptions>(configureOptions),
+            ServiceLifetime.Transient
+        );
+        _services.Add(descriptor);
+        _services.Replace(optionsDescriptor);
+
         return this;
+    }
+
+    public WaterfrontBuilder WithAuthorization<TAuthzService, TServiceOptions>(
+        Action<IServiceProvider, TServiceOptions> configureOptions,
+        ServiceLifetime lifetime = ServiceLifetime.Scoped
+    ) where TAuthzService : AclAuthorizationServiceBase<TServiceOptions>
+      where TServiceOptions : class
+    {
+        ValidateAuthServiceLifetime(lifetime);
+
+        ServiceDescriptor descriptor = ServiceDescriptor.Describe(
+            typeof(IAclAuthorizationService),
+            typeof(TAuthzService),
+            lifetime
+        );
+        ServiceDescriptor optionsDescriptor = ServiceDescriptor.Describe(
+            typeof(IConfigureOptions<TServiceOptions>),
+            sp => new ConfigureOptions<TServiceOptions>(opt => configureOptions(sp, opt)),
+            ServiceLifetime.Transient
+        );
+        _services.Add(descriptor);
+        _services.Replace(optionsDescriptor);
+
+        return this;
+    }
+
+    public WaterfrontBuilder WithAuthorization<TAuthzService, TServiceOptions, TDep>(
+        Action<TDep, TServiceOptions> configureOptions,
+        ServiceLifetime lifetime = ServiceLifetime.Scoped
+    )
+        where TAuthzService : AclAuthorizationServiceBase<TServiceOptions>
+        where TServiceOptions : class
+        where TDep : notnull
+    {
+        return WithAuthorization<TAuthzService, TServiceOptions>(
+            (sp, opt) => configureOptions(sp.GetRequiredService<TDep>(), opt)
+        );
+    }
+
+    private void ValidateAuthServiceLifetime(ServiceLifetime lifetime)
+    {
+        if (lifetime == ServiceLifetime.Transient)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(lifetime),
+                "Auth service lifetime cannot be Transient - other core services are resolved as Scoped"
+            );
+        }
     }
 }

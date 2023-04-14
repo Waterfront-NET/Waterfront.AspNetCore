@@ -9,7 +9,6 @@ using Waterfront.AspNetCore.Configuration.Endpoints;
 using Waterfront.AspNetCore.Middleware;
 using Waterfront.AspNetCore.Services.Authentication;
 using Waterfront.AspNetCore.Services.Authorization;
-using Waterfront.Core;
 using Waterfront.Core.Tokens.Definition;
 using Waterfront.Core.Tokens.Encoders;
 
@@ -19,30 +18,18 @@ public static class WaterfrontExtensions
 {
     public static WaterfrontBuilder AddWaterfront(this IServiceCollection services)
     {
-        return new WaterfrontBuilder(services);
-    }
-
-    public static IServiceCollection AddWaterfront(
-        this IServiceCollection services,
-        Action<WaterfrontBuilder> configureWaterfront
-    )
-    {
-        WaterfrontBuilder builder = new WaterfrontBuilder(services);
-        configureWaterfront(builder);
-        return services;
-    }
-
-    public static IServiceCollection AddWaterfrontCore(this IServiceCollection services)
-    {
         services.AddOptions();
 
+        services.TryAddSingleton<ITokenDefinitionService, TokenDefinitionService>();
         services.TryAddScoped<TokenRequestAuthenticationService>();
         services.TryAddScoped<TokenRequestAuthorizationService>();
-        services.TryAddScoped<ITokenDefinitionService, TokenDefinitionService>();
-        services.TryAddScoped<ITokenEncoder, TokenEncoder>();
-        services.TryAddScoped<TokenMiddleware>();
 
-        return services;
+        services.TryAddScoped<TokenMiddleware>();
+        
+        var builder = new WaterfrontBuilder(services);
+        builder.UseDefaultTokenEncoder();
+
+        return builder;
     }
 
     public static IApplicationBuilder UseWaterfront(
@@ -78,6 +65,7 @@ public static class WaterfrontExtensions
         if ( infoEndpoint.HasValue )
         {
             /*Register info endpoint*/
+            logger.LogWarning("Info endpoint is not implemented yet");
         }
         else
         {
@@ -89,6 +77,7 @@ public static class WaterfrontExtensions
         if ( publicKeyEndpoint.HasValue )
         {
             /*Register public key endpoint*/
+            logger.LogWarning("Public key endpoint is not implemented yet");
         }
         else
         {

@@ -2,9 +2,9 @@
 using Microsoft.Extensions.Logging;
 using Waterfront.AspNetCore.Extensions;
 using Waterfront.Common.Authentication.Credentials;
-using Waterfront.Common.Tokens;
-using Waterfront.Core.Utility.Parsing;
-using Waterfront.Core.Utility.Parsing.Acl;
+using Waterfront.Common.Tokens.Requests;
+using Waterfront.Core.Parsing.Acl;
+using Waterfront.Core.Parsing.Authentication;
 
 namespace Waterfront.AspNetCore.Services.TokenRequests;
 
@@ -39,13 +39,11 @@ public class TokenRequestCreationService
 
         BasicCredentials basicCredentials =
         BasicAuthParser.IsBasicAuth(context.Request.Headers.Authorization) switch {
-            true => BasicCredentials.FromTuple(
-                BasicAuthParser.ParseHeaderValue(context.Request.Headers.Authorization)
-            ),
-            false => BasicCredentials.Empty
+            true  => BasicAuthParser.ParseHeaderValue(context.Request.Headers.Authorization),
+            false => new BasicCredentials { }
         };
         ConnectionCredentials   connectionCredentials   = context.GetConnectionCredentials();
-        RefreshTokenCredentials refreshTokenCredentials = RefreshTokenCredentials.Empty;
+        RefreshTokenCredentials refreshTokenCredentials = new RefreshTokenCredentials { };
 
         return new TokenRequest {
             Id      = context.TraceIdentifier,

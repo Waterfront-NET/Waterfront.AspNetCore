@@ -14,9 +14,9 @@ public static class HttpContextExtensions
             );
         }
 
-        return new ConnectionCredentials(
-            self.Connection.RemoteIpAddress,
-            self.Connection.RemotePort
-        );
+        return new ConnectionCredentials {
+            IPAddress = self.Connection.RemoteIpAddress,
+            Port      = self.Connection.RemotePort
+        };
     }
 }

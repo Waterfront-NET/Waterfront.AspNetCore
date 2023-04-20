@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Waterfront.Common.Authentication;
-using Waterfront.Common.Tokens;
-using Waterfront.Core.Authentication;
+using Waterfront.Common.Tokens.Requests;
 
 namespace Waterfront.AspNetCore.Services.TokenRequests;
 
@@ -26,7 +25,7 @@ public class TokenRequestAuthenticationService
     {
         _logger.LogDebug("Authenticating TokenRequest {RequestId}", request.Id);
 
-        AclAuthenticationResult result = AclAuthenticationResult.FailedForRequest(request);
+        AclAuthenticationResult result = AclAuthenticationResult.Failed(request);
         
         foreach (IAclAuthenticationService service in _authenticationServices)
         {

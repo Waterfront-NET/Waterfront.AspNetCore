@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
+using Waterfront.AspNetCore.Extensions;
 using Waterfront.Common.Authentication;
 using Waterfront.Common.Authorization;
-using Waterfront.Common.Tokens;
-using Waterfront.Core.Authorization;
+using Waterfront.Common.Tokens.Requests;
 
 namespace Waterfront.AspNetCore.Services.TokenRequests;
 
@@ -59,7 +59,7 @@ public class TokenRequestAuthorizationService
                 authzResult
             );
 
-            authzResult = authzResult.MergeWith(currentResult);
+            authzResult = authzResult.Combine(currentResult);
 
             _logger.LogInformation("Mutated result: {@MutResult}", authzResult);
             if ( authzResult.IsSuccessful )

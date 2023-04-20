@@ -7,11 +7,11 @@ using Waterfront.AspNetCore.Services.TokenRequests;
 using Waterfront.Common.Authentication;
 using Waterfront.Common.Authorization;
 using Waterfront.Common.Contracts.Tokens.Response;
-using Waterfront.Common.Tokens;
-using Waterfront.Core.Json.Converters;
-using Waterfront.Core.Tokens.Definition;
-using Waterfront.Core.Tokens.Encoders;
-using Waterfront.Core.Utility.Serialization.Acl;
+using Waterfront.Common.Tokens.Definition;
+using Waterfront.Common.Tokens.Encoding;
+using Waterfront.Common.Tokens.Requests;
+using Waterfront.Core.Serialization.Acl;
+using Waterfront.Core.Serialization.Tokens.Converters;
 
 namespace Waterfront.AspNetCore.Middleware;
 
@@ -19,14 +19,13 @@ public class TokenMiddleware : IMiddleware
 {
     private static readonly JsonSerializerOptions s_JsonSerializerOptions =
     new JsonSerializerOptions { Converters = { TokenResponseJsonConverter.Instance } };
-    
+
     private readonly ILogger<TokenMiddleware>          _logger;
     private readonly ITokenDefinitionService           _tokenDefinitionService;
     private readonly ITokenEncoder                     _tokenEncoder;
     private readonly TokenRequestCreationService       _requestCreationService;
     private readonly TokenRequestAuthenticationService _authenticationService;
     private readonly TokenRequestAuthorizationService  _authorizationService;
-    
 
     public TokenMiddleware(
         ILogger<TokenMiddleware> logger,
@@ -67,12 +66,15 @@ public class TokenMiddleware : IMiddleware
         }
         catch (InvalidOperationException exception)
         {
-            await Results.BadRequest(new {
-                exception.Message,
-                exception.Data,
-                exception.StackTrace,
-                exception.Source
-            }).ExecuteAsync(context);
+            await Results.BadRequest(
+                             new {
+                                 exception.Message,
+                                 exception.Data,
+                                 exception.StackTrace,
+                                 exception.Source
+                             }
+                         )
+                         .ExecuteAsync(context);
             return;
         }
 

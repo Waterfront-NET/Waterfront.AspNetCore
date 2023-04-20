@@ -4,7 +4,6 @@
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <Version>1.0.0-alpha.13</Version>
     </PropertyGroup>
 
     <ItemGroup>
@@ -18,12 +17,18 @@
         <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
         <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
-        <PackageReference Include="Waterfront.Common" Version="1.0.0-alpha.5" />
-        <PackageReference Include="Waterfront.Core" Version="1.0.0-alpha.8" />
     </ItemGroup>
 
-    <Target Name="Push package" AfterTargets="Pack">
-        <Exec Command="dotnet nuget push $(MSBuildThisFileDirectory)bin\Release\Waterfront.AspNetCore.$(Version).nupkg -s $(USERPROFILE)\.nuget\packages" />
-    </Target>
+    <ItemGroup>
+      <Reference Include="Waterfront.Common">
+        <HintPath>..\..\..\Waterfront\src\Waterfront.Common\bin\Debug\net6.0\Waterfront.Common.dll</HintPath>
+      </Reference>
+      <Reference Include="Waterfront.Core">
+        <HintPath>..\..\..\Waterfront\src\Waterfront.Core\bin\Debug\net6.0\Waterfront.Core.dll</HintPath>
+      </Reference>
+      <Reference Include="Waterfront.Extensions.DependencyInjection">
+        <HintPath>..\..\..\Waterfront.Extensions.DependencyInjection\src\Waterfront.Extensions.DependencyInjection\bin\Debug\net6.0\Waterfront.Extensions.DependencyInjection.dll</HintPath>
+      </Reference>
+    </ItemGroup>
 
 </Project>

@@ -1,0 +1,21 @@
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v3
+      - run: ./build.sh -t build -c Release
+      - uses: actions/upload-artifact@v3
+        with:
+          name: packages
+          path: |
+            artifacts/pkg/*.nupkg
+            artifacts/pkg/*.snupkg
+      - uses: actions/upload-artifact@v3
+        with:
+          name: libraries
+          path: |
+            artifacts/lib/*.zip

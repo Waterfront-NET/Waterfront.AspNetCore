@@ -18,12 +18,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Reference
-            Include="..\..\..\Waterfront\src\Waterfront.Common\bin\Debug\net6.0\Waterfront.Common.dll" />
-        <Reference
-            Include="..\..\..\Waterfront\src\Waterfront.Core\bin\Debug\net6.0\Waterfront.Core.dll" />
-        <Reference
-            Include="..\..\..\Waterfront.Extensions.DependencyInjection\src\Waterfront.Extensions.DependencyInjection\bin\Debug\net6.0\Waterfront.Extensions.DependencyInjection.dll" />
+        <PackageReference Include="Waterfront.Common" Version="1.0.0-alpha.72" />
+        <PackageReference Include="Waterfront.Core" Version="1.0.0-alpha.72" />
+        <PackageReference Include="Waterfront.Extensions.DependencyInjection"
+            Version="0.1.0-alpha.10" />
     </ItemGroup>
 
 </Project>

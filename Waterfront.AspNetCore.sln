@@ -7,6 +7,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{023367D3-B66
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Waterfront.AspNetCore", "src\Waterfront.AspNetCore\Waterfront.AspNetCore.csproj", "{0C612C69-A805-4375-9E23-0753BA84B11B}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{0C8CA0EA-508B-4814-9612-C5553DF36F6B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Waterfront.AspNetCore.Tests", "test\Waterfront.AspNetCore.Tests\Waterfront.AspNetCore.Tests.csproj", "{4E3F517E-6763-4A0A-98DE-C6FBEAE3BBE0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,8 +24,13 @@ Global
 		{0C612C69-A805-4375-9E23-0753BA84B11B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0C612C69-A805-4375-9E23-0753BA84B11B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0C612C69-A805-4375-9E23-0753BA84B11B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4E3F517E-6763-4A0A-98DE-C6FBEAE3BBE0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E3F517E-6763-4A0A-98DE-C6FBEAE3BBE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E3F517E-6763-4A0A-98DE-C6FBEAE3BBE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E3F517E-6763-4A0A-98DE-C6FBEAE3BBE0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{0C612C69-A805-4375-9E23-0753BA84B11B} = {023367D3-B664-47F9-BDD8-CC5F7453BB93}
+		{4E3F517E-6763-4A0A-98DE-C6FBEAE3BBE0} = {0C8CA0EA-508B-4814-9612-C5553DF36F6B}
 	EndGlobalSection
 EndGlobal

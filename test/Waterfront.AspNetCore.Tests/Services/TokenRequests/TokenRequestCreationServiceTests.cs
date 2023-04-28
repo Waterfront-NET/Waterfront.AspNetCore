@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System.Net;
+using FluentAssertions;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -7,77 +10,72 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json;
 using Waterfront.AspNetCore.Services.TokenRequests;
+using Waterfront.Common.Tokens.Requests;
 
 namespace Waterfront.AspNetCore.Tests.Services.TokenRequests;
 
 [TestClass]
 public class TokenRequestCreationServiceTests
 {
-    /*static Mock<ILogger<TokenRequestCreationService>> MockLogger;
+    private static IHost host;
 
-    [ClassInitialize]
-    public static void Initialize(TestContext ctx)
+    [TestInitialize]
+    public void TestInitialize()
     {
-        MockLogger = new Mock<ILogger<TokenRequestCreationService>>();
-    }*/
+        /*Create test host*/
+        host = new HostBuilder().ConfigureWebHost(
+                                    webhostBuilder => webhostBuilder.UseTestServer()
+                                    .ConfigureServices(
+                                        services => {
+                                            services.AddLogging()
+                                                    .AddSingleton<TokenRequestCreationService>();
+                                        }
+                                    )
+                                    .Configure(
+                                        applicationBuilder => {
+                                            applicationBuilder.Map(
+                                                "/request-creation-test",
+                                                app => {
+                                                    app.Use(
+                                                        async (context, next) => {
+                                                            try
+                                                            {
+                                                                TokenRequest request =
+                                                                context.RequestServices
+                                                                .GetRequiredService<
+                                                                    TokenRequestCreationService>()
+                                                                .CreateRequest(context);
+                                                            }
+                                                            catch (InvalidOperationException ioe)
+                                                            {
+                                                                await Results.BadRequest(ioe.Message)
+                                                                .ExecuteAsync(context);
+                                                                return;
+                                                            }
+
+                                                            await next();
+                                                        }
+                                                    );
+                                                }
+                                            );
+                                        }
+                                    )
+                                )
+                                .Start();
+    }
+
+    [TestCleanup]
+    public void TestCleanup()
+    {
+        host.StopAsync().GetAwaiter().GetResult();
+        host.Dispose();
+    }
 
     [TestMethod]
     public async Task TestNoService()
     {
-        using var host = await new HostBuilder().ConfigureWebHost(
-                                                    builder =>
-                                                    {
-                                                        builder.UseTestServer()
-                                                               .ConfigureServices(
-                                                                   services =>
-                                                                   {
-                                                                       services.AddLogging();
-                                                                       services
-                                                                           .AddSingleton<TokenRequestCreationService>();
-                                                                   }
-                                                               )
-                                                               .Configure(
-                                                                   app =>
-                                                                   {
-                                                                       app.Map(
-                                                                           "/test",
-                                                                           appBuilder =>
-                                                                           {
-                                                                               appBuilder.Use(
-                                                                                   async (ctx, next) =>
-                                                                                   {
-                                                                                       var srv = ctx.RequestServices
-                                                                                           .GetRequiredService<
-                                                                                               TokenRequestCreationService>();
+        var response = await host.GetTestClient().GetAsync("/request-creation-test");
 
-                                                                                       var logger = ctx.RequestServices
-                                                                                           .GetRequiredService<
-                                                                                               ILogger<
-                                                                                                   IApplicationBuilder>>();
-
-                                                                                       var tokenRequest =
-                                                                                           srv.CreateRequest(ctx);
-
-                                                                                       logger.LogInformation(
-                                                                                           JsonConvert.SerializeObject(
-                                                                                               tokenRequest,
-                                                                                               Formatting.Indented
-                                                                                           )
-                                                                                       );
-
-                                                                                       await next(ctx);
-                                                                                   }
-                                                                               );
-                                                                           }
-                                                                       );
-                                                                   }
-                                                               );
-                                                    }
-                                                )
-                                                .StartAsync();
-
-        var response = await host.GetTestClient().GetAsync("/test");
-
-        Console.WriteLine(JsonConvert.SerializeObject(response, Formatting.Indented));
+        response.Should().HaveStatusCode(HttpStatusCode.BadRequest);
     }
 }

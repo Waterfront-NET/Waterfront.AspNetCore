@@ -10,6 +10,7 @@ jobs:
         with: { fetch-depth: 0 }
       - uses: actions/setup-dotnet@v3
       - run: ./build.sh --target build --configuration Release
+      - run: ./build.sh --target pack --configuration Release --no-build
       - uses: actions/upload-artifact@v3
         with:
           name: packages

@@ -6,9 +6,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Moq;
-using Newtonsoft.Json;
 using Waterfront.AspNetCore.Services.TokenRequests;
 using Waterfront.Common.Tokens.Requests;
 

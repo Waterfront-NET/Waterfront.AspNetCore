@@ -36,4 +36,7 @@ jobs:
           name: packages
           path: artifacts/pkg
       - run: ./build.sh --target artifacts/push/nuget
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
       - run: ./build.sh --target artifacts/push/github
+        if: false # disabled for now

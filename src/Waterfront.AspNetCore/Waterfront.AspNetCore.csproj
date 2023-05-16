@@ -14,14 +14,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <FrameworkReference Include="Microsoft.AspNetCore.App" Version="6.0.0" />
+        <FrameworkReference Include="Microsoft.AspNetCore.App" Version="6.0.0"/>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Waterfront.Common" Version="1.0.0-alpha.72" />
-        <PackageReference Include="Waterfront.Core" Version="1.0.0-alpha.72" />
-        <PackageReference Include="Waterfront.Extensions.DependencyInjection"
-            Version="0.1.0-alpha.10" />
+        <PackageReference Include="Waterfront.Common" Version="1.0.0-alpha.76"/>
+        <PackageReference Include="Waterfront.Core" Version="1.0.0-alpha.76"/>
+        <PackageReference Include="Waterfront.Extensions.DependencyInjection" Version="1.0.0-alpha.15"/>
     </ItemGroup>
 
 </Project>

@@ -14,7 +14,9 @@ namespace Waterfront.AspNetCore.Tests.Services.TokenRequests;
 [TestClass]
 public class TokenRequestCreationServiceTests
 {
+#pragma warning disable CS8618
     private static IHost host;
+#pragma warning restore CS8618
 
     [TestInitialize]
     public void TestInitialize()
@@ -23,18 +25,22 @@ public class TokenRequestCreationServiceTests
         host = new HostBuilder().ConfigureWebHost(
                                     webhostBuilder => webhostBuilder.UseTestServer()
                                     .ConfigureServices(
-                                        services => {
+                                        services =>
+                                        {
                                             services.AddLogging()
                                                     .AddSingleton<TokenRequestCreationService>();
                                         }
                                     )
                                     .Configure(
-                                        applicationBuilder => {
+                                        applicationBuilder =>
+                                        {
                                             applicationBuilder.Map(
                                                 "/request-creation-test",
-                                                app => {
+                                                app =>
+                                                {
                                                     app.Use(
-                                                        async (context, next) => {
+                                                        async (context, next) =>
+                                                        {
                                                             try
                                                             {
                                                                 TokenRequest request =

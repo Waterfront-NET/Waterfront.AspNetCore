@@ -6,8 +6,8 @@ Setup(ctx => {
   EnsureDirectoryExists(paths.Packages);
 
   Information("Setting version environment variables...");
-  Environment.SetEnvironmentVariable("SEMVER", version.SemVer);
-  Environment.SetEnvironmentVariable("INFO_VER", version.InformationalVersion);
+  Environment.SetEnvironmentVariable("GitVersion_SemVer", version.SemVer);
+  Environment.SetEnvironmentVariable("GitVersion_InformationalVersion", version.InformationalVersion);
 });
 
 RunTarget(args.Target);

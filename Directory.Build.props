@@ -2,8 +2,8 @@
 
   <PropertyGroup Label="Package info">
     <Company>Waterfront.NET</Company>
-    <Authors>Waterfront.NET project contributors</Authors>
-    <Copyright>Copyright (c) 2023 Waterfront.NET project contributors</Copyright>
+    <Authors>Waterfront.NET project team &amp; contributors</Authors>
+    <Copyright>Copyright (c) 2023 Waterfront.NET project team &amp; contributors</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryType>git</RepositoryType>
@@ -26,8 +26,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" />
-    <None Include="$(MSBuildThisFileDirectory)LICENSE" Pack="true" PackagePath="\" />
+    <Content Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" Visible="false" />
+    <Content Include="$(MSBuildThisFileDirectory)LICENSE" Pack="true" PackagePath="\" Visible="false" />
   </ItemGroup>
 
 </Project>

@@ -10,14 +10,14 @@ namespace Waterfront.AspNetCore.Services.TokenRequests;
 public class TokenRequestAuthenticationService
 {
     private readonly ILogger<TokenRequestAuthenticationService> _logger;
-    private readonly IEnumerable<IAclAuthenticationService>     _authenticationServices;
+    private readonly IEnumerable<IAclAuthenticationService> _authenticationServices;
 
     public TokenRequestAuthenticationService(
         ILogger<TokenRequestAuthenticationService> logger,
         IEnumerable<IAclAuthenticationService> authenticationServices
     )
     {
-        _logger                 = logger;
+        _logger = logger;
         _authenticationServices = authenticationServices;
     }
 
@@ -25,8 +25,8 @@ public class TokenRequestAuthenticationService
     {
         _logger.LogDebug("Authenticating TokenRequest {RequestId}", request.Id);
 
-        AclAuthenticationResult result = AclAuthenticationResult.Failed(request);
-        
+        AclAuthenticationResult result = AclAuthenticationResult.Fail(request);
+
         foreach (IAclAuthenticationService service in _authenticationServices)
         {
             AclAuthenticationResult currentResult = await service.AuthenticateAsync(request);
@@ -50,7 +50,7 @@ public class TokenRequestAuthenticationService
                 result.User!.Username
             );
         }
-        
+
         return result;
     }
 }

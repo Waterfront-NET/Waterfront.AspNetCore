@@ -134,6 +134,6 @@ public class TokenMiddleware : IMiddleware
 
         _logger.LogDebug("Response written [{RequestID}]", requestId);
 
-        await next(context);
+        // await next(context);
     }
 }

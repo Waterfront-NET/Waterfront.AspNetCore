@@ -31,10 +31,9 @@ public class TokenRequestAuthorizationService
         if ( request.IsAuthenticationRequest )
         {
             // Short-circuit the call to skip all the authorization part since it is not needed
-            return new AclAuthorizationResult {
+            return new AclAuthorizationResult(request) {
                 AuthorizedScopes = Array.Empty<TokenRequestScope>(),
-                ForbiddenScopes =
-                Array.Empty<TokenRequestScope>()
+                ForbiddenScopes  = Array.Empty<TokenRequestScope>()
             };
         }
 
@@ -46,7 +45,7 @@ public class TokenRequestAuthorizationService
         }
 
         AclAuthorizationResult authzResult =
-        new AclAuthorizationResult { ForbiddenScopes = request.Scopes };
+        new AclAuthorizationResult(request) { ForbiddenScopes = request.Scopes };
 
         foreach ( IAclAuthorizationService service in _authorizationServices )
         {

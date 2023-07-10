@@ -11,8 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Waterfront.Core" Version="1.0.0-alpha.85" />
-    <PackageReference Include="Waterfront.Extensions.DependencyInjection" Version="1.0.0-alpha.21" />
+    <PackageReference Include="Waterfront.Core" Version="1.0.0-package-merging.1" />
   </ItemGroup>
 
 </Project>

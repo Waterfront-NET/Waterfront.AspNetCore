@@ -13,24 +13,25 @@ namespace Waterfront.AspNetCore.Extensions;
 /// </summary>
 public static class ApplicationBuilderExtensions
 {
-    public static IApplicationBuilder UseWaterfront(this IApplicationBuilder builder) =>
-    builder.UseWaterfront(_ => { });
-
-    public static IApplicationBuilder UseWaterfront(this IApplicationBuilder builder, Action<EndpointOptions> configureEndpoints)
+    public static IApplicationBuilder UseWaterfront(
+        this IApplicationBuilder builder,
+        Action<EndpointOptions>? configureEndpoints = null
+    )
     {
-        ILogger<IApplicationBuilder> logger = builder.ApplicationServices
-                                                     .GetRequiredService<
-                                                         ILogger<IApplicationBuilder>>();
+        ILogger<IApplicationBuilder> logger = builder.ApplicationServices.GetRequiredService<
+            ILogger<IApplicationBuilder>
+        >();
 
-        IOptions<EndpointOptions> endpointOptions = builder.ApplicationServices
-                                                           .GetRequiredService<
-                                                               IOptions<EndpointOptions>>();
-        
-        configureEndpoints(endpointOptions.Value);
-        
+        IOptions<EndpointOptions> endpointOptions = builder.ApplicationServices.GetRequiredService<
+            IOptions<EndpointOptions>
+        >();
+
+        if (configureEndpoints != null)
+            configureEndpoints(endpointOptions.Value);
+
         PathString tokenEndpoint = endpointOptions.Value.TokenEndpoint;
 
-        if ( !tokenEndpoint.HasValue )
+        if (!tokenEndpoint.HasValue)
         {
             throw new InvalidOperationException(
                 "Cannot use Waterfront without token endpoint configured"
@@ -42,7 +43,7 @@ public static class ApplicationBuilderExtensions
 
         PathString infoEndpoint = endpointOptions.Value.InfoEndpoint; /*TODO*/
 
-        if ( infoEndpoint.HasValue )
+        if (infoEndpoint.HasValue)
         {
             /*Register info endpoint*/
             logger.LogWarning("Info endpoint is not implemented yet");
@@ -54,7 +55,7 @@ public static class ApplicationBuilderExtensions
 
         PathString publicKeyEndpoint = endpointOptions.Value.PublicKeyEndpoint;
 
-        if ( publicKeyEndpoint.HasValue )
+        if (publicKeyEndpoint.HasValue)
         {
             /*Register public key endpoint*/
             logger.LogWarning("Public key endpoint is not implemented yet");
@@ -66,5 +67,4 @@ public static class ApplicationBuilderExtensions
 
         return builder;
     }
-
 }

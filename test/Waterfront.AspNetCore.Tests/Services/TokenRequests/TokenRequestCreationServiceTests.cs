@@ -22,49 +22,46 @@ public class TokenRequestCreationServiceTests
     public void TestInitialize()
     {
         /*Create test host*/
-        host = new HostBuilder().ConfigureWebHost(
-                                    webhostBuilder => webhostBuilder.UseTestServer()
-                                    .ConfigureServices(
-                                        services =>
+        host = new HostBuilder()
+            .ConfigureWebHost(
+                webhostBuilder =>
+                    webhostBuilder
+                        .UseTestServer()
+                        .ConfigureServices(services =>
+                        {
+                            services.AddLogging().AddSingleton<TokenRequestService>();
+                        })
+                        .Configure(applicationBuilder =>
+                        {
+                            applicationBuilder.Map(
+                                "/request-creation-test",
+                                app =>
+                                {
+                                    app.Use(
+                                        async (context, next) =>
                                         {
-                                            services.AddLogging()
-                                                    .AddSingleton<TokenRequestCreationService>();
-                                        }
-                                    )
-                                    .Configure(
-                                        applicationBuilder =>
-                                        {
-                                            applicationBuilder.Map(
-                                                "/request-creation-test",
-                                                app =>
-                                                {
-                                                    app.Use(
-                                                        async (context, next) =>
-                                                        {
-                                                            try
-                                                            {
-                                                                TokenRequest request =
-                                                                context.RequestServices
-                                                                .GetRequiredService<
-                                                                    TokenRequestCreationService>()
-                                                                .CreateRequest(context);
-                                                            }
-                                                            catch (InvalidOperationException ioe)
-                                                            {
-                                                                await Results.BadRequest(ioe.Message)
-                                                                .ExecuteAsync(context);
-                                                                return;
-                                                            }
+                                            try
+                                            {
+                                                TokenRequest request = context.RequestServices
+                                                    .GetRequiredService<TokenRequestService>()
+                                                    .CreateRequest(context);
+                                            }
+                                            catch (InvalidOperationException ioe)
+                                            {
+                                                await Results
+                                                    .BadRequest(ioe.Message)
+                                                    .ExecuteAsync(context);
+                                                return;
+                                            }
 
-                                                            await next();
-                                                        }
-                                                    );
-                                                }
-                                            );
+                                            await next();
                                         }
-                                    )
-                                )
-                                .Start();
+                                    );
+                                }
+                            );
+                        })
+            )
+            .Start();
     }
 
     [TestCleanup]

@@ -21,6 +21,19 @@ foreach(var project in projects.Where(x => !x.IsTest)) {
         CopyFileToDirectory(package, paths.Packages);
       });
     }
+
+    if(args.Configuration is "Debug" && !args.NoCopyArtifacts) {
+      var packageName = $"{project.Name}.{version.SemVer}.nupkg";
+      var packagePath = project.Directory.Combine("bin/Debug").CombineWithFilePath(packageName);
+
+      var repoDirectory = DirectoryPath.FromString(EnvironmentVariable("USERPROFILE")).Combine(".nuget/packages");
+      var targetDirectory = repoDirectory.Combine(project.Name.ToLowerInvariant()).Combine(version.SemVer);
+      EnsureDirectoryDoesNotExist(targetDirectory);
+
+      DotNetNuGetPush(packagePath, new DotNetNuGetPushSettings {
+        Source = repoDirectory.ToString()
+      });
+    }
   });
 
   mainPackTask.IsDependentOn(task);

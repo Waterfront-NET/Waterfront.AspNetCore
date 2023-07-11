@@ -49,7 +49,7 @@ public class TokenRequestService
         ) switch
         {
             true => BasicAuthParser.ParseHeaderValue(context.Request.Headers.Authorization),
-            false => default(BasicCredentials)
+            false => default
         };
         ConnectionCredentials connectionCredentials = context.GetConnectionCredentials();
         // TODO
